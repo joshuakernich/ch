@@ -9,15 +9,27 @@
 	<script type="text/javascript">
 		
 		$(function(){
+
+			let labelx = ['Low','Moderate','Frequent','Collaborative'];
+			let labely = ['Less Important','Important','Very Important'];
 			
 
+			let $r = $('<tr>').appendTo('table');
+			$('<td>').appendTo($r);
+			for(var c=0; c<4; c++) $('<td>').appendTo($r).text(labelx[c]);
+
 			for(var i=0; i<3; i++){
-				let $r = $('<row>').appendTo('grid')
+				$r = $('<tr>').appendTo('table');
+				$('<td>').appendTo($r).text(labely[i]);
+
 				for(var c=0; c<4; c++){
-					let $c = $('<cell i='+(3-i)+' c='+(c+1)+'>').appendTo($r);
+					let $c = $('<td i='+(3-i)+' c='+(c+1)+'>').appendTo($r);
 				}
 			}
 
+			$r = $('<tr>').appendTo('table');
+			$('<td>').appendTo($r);
+			for(var c=0; c<4; c++) $('<td>').appendTo($r).text(labelx[c]);
 			
 
 			let rows = RAW.split('\n');
@@ -26,6 +38,8 @@
 			for(var r=1; r<rows.length; r++){
 
 				let $p = $('<postit>').text(rows[r][0]).attr('orgid',r);
+				let $stack = $('<stack>').attr('orgid',r);
+				
 				
 
 				for(var n=1; n<rows[r].length; n+=2){
@@ -37,19 +51,28 @@
 
 					if(c>0){
 
-						let $cell = $('cell[c='+c+'][i='+i+']');
 
-						if( $cell.find('postit[orgid='+r+']').length==0 ){
+
+						let $cell = $('td[c='+c+'][i='+i+']');
+
+						let $mystack = $cell.find('stack[orgid='+r+']');
+
+						if($mystack.length==0) $mystack = $stack.clone().appendTo($cell);
+
+						/*if( $cell.find('postit[orgid='+r+']').length==0 ){
 							let $pAll = $p.clone().appendTo( $cell ).attr('state','all').data('count',0);
 							$('<counter>').appendTo($pAll);
-						}
+						}*/
 
-						$p.clone().appendTo( $cell ).attr('state',state);
+
 						
-						let count = $cell.find('postit[orgid='+r+'][state=all]').data('count');
+
+						$p.clone().appendTo( $mystack ).attr('state',state);
+						
+						/*let count = $cell.find('postit[orgid='+r+'][state=all]').data('count');
 						count++;
 						$cell.find('postit[orgid='+r+'][state=all]').data('count',count);
-						if(count>1) $cell.find('postit[orgid='+r+'][state=all] counter').text(count);
+						if(count>1) $cell.find('postit[orgid='+r+'][state=all] counter').text(count);*/
 					}
 				}
 
@@ -64,10 +87,13 @@
 				$(this).attr('active',true);
 
 				let state = $(this).text().toLowerCase();
-				$('postit').hide();
+				$('postit').removeClass('alive');
 				
+				if(state=='all') $('postit').addClass('alive');
+				else $('postit[state='+state+']').addClass('alive');
 
-				$('postit[state='+state+']').show();
+				$('table').removeClass('allmode');
+				if(state=='all') $('table').addClass('allmode');
 				
 			}).eq(0).trigger('click');
 
@@ -78,52 +104,71 @@
 		@import url('https://fonts.googleapis.com/css2?family=PT+Sans+Narrow:wght@400;700&display=swap');
 
 		body{
-			width: 100vw;
-			height: 100vh;
-			padding: 0px;
-			margin: 0px;
+			
+			padding: 50px;
+			margin: 50px;
 			font-family: "PT Sans Narrow", sans-serif;
 			  font-weight: 400;
 			  font-style: normal;
+
+			--red: #FA9189;
+			--orange: #FCAD7C;
+			--gold: #FFE699;
+			--yellow: #1F1F1F;
+			--green: #B6F5BE;
+			--blue: #D6F6FF;
+			--pink: #E2CBF7;
+			--purple: #D1BDFF;
 		}
+
+		[state='sa']{ background: var(--orange); }
+		[state='nswact']{ background: var(--gold); }
+		[state='qld']{ background: var(--green); }
+		[state='nt']{ background: var(--blue); }
+		[state='tas']{ background: var(--pink); }
+		[state='wa']{ background: var(--purple); }
+
 		grid{
 			display: block;
 			width: calc( 100vw - 100px );
-			height: calc( 100vh - 100px );
-			background: #ddd;
-			position: absolute;
-			top: 0px;
-			left: 0px;
-			right: 0px;
-			bottom: 0px;
+			
+			
+			
 			margin: auto;
+			position: relative;
+			margin-top: 50px;
 		}
 
 		row{
 			display: block;
-			height: 33.33%;
+			
 			
 			position: relative;
+			border-bottom: 1px solid #ccc;
+			white-space: nowrap;
+			box-sizing: border-box;
 		}
 
 		cell{
-			width: 25%;
+			width: 400px;
 			height: 100%;
 			display: inline-block;
 			
 			box-sizing: border-box;
-			border: 1px solid #ccc;
+			border-left: 1px solid #ccc;
+			border-right: 1px solid #ccc;
 			vertical-align: top;
 			line-height: 0px;
 			padding: 5px;
-			overflow: hidden;
+			white-space: normal;
+			min-height: 100px;
+			box-sizing: border-box;
 		}
 
 		postit{
 			display: inline-block;
 			
 			background: white;
-			margin: 1px;
 			
 			font-size: 15px;
 			line-height: 1em;
@@ -132,8 +177,11 @@
 			
 			vertical-align: top;
 			overflow: hidden;
-
+			margin: 5px;
+			display: none;
 		}
+
+		
 
 		h2{
 			height: 50px;
@@ -145,15 +193,19 @@
 
 		.sorters{
 
-			position:absolute;
-			top:-50px; 
-			left: 0px;
-			line-height: 50px;
+			display: block;		
+			margin-bottom: 20px;
+		}
+
+		button{
+			border: 1px solid black;
+			padding: 10px 20px;
 		}
 
 		button[active]{
-			background: black;
-			color: white;
+			
+			
+			box-shadow: 0px 5px black;
 		}
 		counter{
 			display: inline-block;
@@ -167,22 +219,81 @@
 		counter:empty{
 			display: none;
 		}
+
+		row:before{
+			content: "Important";
+			left: 0px;
+			bottom: 0px;
+			transform: rotate(-90deg);
+			transform-origin: bottom left;
+			display: block;
+			position: absolute;
+			line-height: 40px;
+			font-size: 20px;
+			border-left: 1px solid black;
+			padding-left: 10px;
+
+		}
+
+		table{
+			border-collapse: collapse;
+		}
+
+
+		td{
+			border: 1px solid #ddd;
+			padding: 10px;
+			vertical-align: top;
+			
+		}
+
+		stack{
+			display: inline-block;
+			position: relative;
+			
+			
+		}
+
+		postit.alive{
+			display: inline-block;
+		}
+
+
+
+
+		.allmode stack postit.alive:not(:first-of-type){
+			position: absolute;
+			top: 0px;
+			left: 0px;
+			right: 0px;
+			bottom: 0px;
+		}
+
+		.allmode stack postit.alive:nth-of-type(2){ transform: translate(2px, 2px); }
+		.allmode stack postit.alive:nth-of-type(3){ transform: translate(4px, 4px); }
+		.allmode stack postit.alive:nth-of-type(4){ transform: translate(6px, 6px); }
+		.allmode stack postit.alive:nth-of-type(5){ transform: translate(8px, 8px); }
+		.allmode stack postit.alive:nth-of-type(6){ transform: translate(10px, 10px); }
+		.allmode stack postit.alive:nth-of-type(7){ transform: translate(12px, 12px); }
+		
 	</style>
 </head>
 <body>
-	<grid>
-		<div class='sorters'>
+	<div class='sorters'>
 			SHOW: 
 			<button active>ALL</button>
-			<button>SA</button>
-			<button>VIC</button>
-			<button>NSWACT</button>
-			<button>NT</button>
-			<button>WA</button>
-			<button>TAS</button>
+			<button state='sa'>SA</button>
+			<button state='vic'>VIC</button>
+			<button state='nswact'>NSWACT</button>
+			<button state='nt'>NT</button>
+			<button state='wa'>WA</button>
+			
+			<button state='tas'>TAS</button>
+			<button state='qld'>QLD</button>
 		</div>
-		<h2 style="left: 0px;bottom: 0px; transform: rotate(-90deg); transform-origin: bottom left;">Importance →</h2>
-		<h2 style="left: 0px;bottom: -50px;">Level of Collaboration →</h2>
-	</grid>
+	<table>
+	
+		
+	</table>
 </body>
 </html>
