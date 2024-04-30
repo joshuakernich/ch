@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Connections</title>
+	<script type="text/javascript" src="raw.js"></script>
+	<script type="text/javascript" src="jq.js"></script>
+	<script type="text/javascript">
+		
+		$(function(){
+			
+
+			for(var i=0; i<3; i++){
+				let $r = $('<row>').appendTo('grid')
+				for(var c=0; c<4; c++){
+					let $c = $('<cell i='+(3-i)+' c='+(c+1)+'>').appendTo($r);
+				}
+			}
+
+			let rows = RAW.split('\n');
+			for(var r in rows) rows[r] = rows[r].split(',');
+
+			for(var r=1; r<rows.length; r++){
+
+				let $p = $('<postit>').text(rows[r][0]);
+
+				for(var n=1; n<rows[r].length; n+=2){
+
+					let c = parseInt(rows[r][n]);
+					let i = parseInt(rows[r][n+1]);
+					
+					let state = rows[0][n]?rows[0][n].split('-')[0]:undefined;
+
+					if(c>0){
+						$p.clone().appendTo( $('cell[c='+c+'][i='+i+']') ).attr('state',state);
+					}
+				}
+			}
+
+			$('button').click(function(){
+
+				$('button').removeAttr('active');
+				$(this).attr('active',true);
+
+				let state = $(this).text().toLowerCase();
+				$('postit').hide();
+				
+				if(state=='all') $('postit').show();
+				else $('postit[state='+state+']').show();
+
+			})
+		})
+	</script>
+	<style type="text/css">
+		@import url('https://fonts.googleapis.com/css2?family=PT+Sans+Narrow:wght@400;700&display=swap');
+
+		body{
+			width: 100vw;
+			height: 100vh;
+			padding: 0px;
+			margin: 0px;
+			font-family: "PT Sans Narrow", sans-serif;
+			  font-weight: 400;
+			  font-style: normal;
+		}
+		grid{
+			display: block;
+			width: calc( 100vw - 100px );
+			height: calc( 100vh - 100px );
+			background: #ddd;
+			position: absolute;
+			top: 0px;
+			left: 0px;
+			right: 0px;
+			bottom: 0px;
+			margin: auto;
+		}
+
+		row{
+			display: block;
+			height: 33.33%;
+			
+			position: relative;
+		}
+
+		cell{
+			width: 25%;
+			height: 100%;
+			display: inline-block;
+			
+			box-sizing: border-box;
+			border: 1px solid #ccc;
+			vertical-align: top;
+			line-height: 0px;
+			padding: 5px;
+		}
+
+		postit{
+			display: inline-block;
+			width: 43px;
+			height: 43px;
+			background: white;
+			margin: 1px;
+			overflow: hidden;
+			font-size: 10px;
+			line-height: 1em;
+		}
+
+		h2{
+			height: 50px;
+			line-height: 50px;
+			position: absolute;
+			
+			margin: 0px;
+		}
+
+		.sorters{
+
+			position:absolute;
+			top:-50px; 
+			left: 0px;
+			line-height: 50px;
+		}
+
+		button[active]{
+			background: black;
+			color: white;
+		}
+	</style>
+</head>
+<body>
+	<grid>
+		<div class='sorters'>
+			SHOW: 
+			<button active>ALL</button>
+			<button>SA</button>
+			<button>VIC</button>
+			<button>NSWACT</button>
+			<button>NT</button>
+			<button>WA</button>
+			<button>TAS</button>
+		</div>
+		<h2 style="left: 0px;bottom: 0px; transform: rotate(-90deg); transform-origin: bottom left;">Importance →</h2>
+		<h2 style="left: 0px;bottom: -50px;">Level of Collaboration →</h2>
+	</grid>
+</body>
+</html>
